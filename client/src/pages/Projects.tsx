@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from  "react"
+import React, { useEffect, useRef, useState } from  "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import type { Project } from "../types"
 import { ArrowBigDownDashIcon, EyeIcon, EyeOffIcon, Fullscreen, FullscreenIcon, LaptopIcon, Loader2Icon, MessageSquareIcon, SaveIcon, Smartphone, SmartphoneIcon, TabletIcon, XIcon } from "lucide-react"
-import { dummyConversations, dummyProjects } from "../assets/assets"
+import { dummyConversations, dummyProjects, dummyVersion } from "../assets/assets"
+import Sidebar from "../components/Sidebar"
+import ProjectPreview, { type ProjectPreviewRef } from "../components/ProjectPreview"
 
 const Projects = () => {
 
@@ -13,16 +15,18 @@ const Projects = () => {
     const [loading , setLoading] = useState(true)
 
     const [isGenerating, setIsGenerating] = useState(true)
-    const [device, setDevice] = useState<'phone' | 'tablet' | 'dekstop'>("dekstop") //this is so that we can preview the output that is the website in different screen size
+    const [device, setDevice] = useState<'phone' | 'tablet' | 'desktop'>("desktop") //this is so that we can preview the output that is the website in different screen size
 
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [isSaving, setIsSaving] = useState(false)
+
+    const previewRef = useRef<ProjectPreviewRef>(null)
 
     const fetchProject = async ()=>{
         const project = dummyProjects.find(project => project.id === projectId)
         setTimeout(()=>{
            if(project){
-            setProject({...project, conversation: dummyConversations});
+            setProject({...project, conversation: dummyConversations, versions : dummyVersion});
             setLoading(false)
             setIsGenerating(project.current_code ? false: true)
            } 
@@ -71,7 +75,7 @@ const Projects = () => {
                 <div className="hidden sm:flex gap-2 bg-gray-950 p-1.5 rounded-md">
                     <SmartphoneIcon onClick={()=> setDevice('phone')} className={`size-6 p-1 rounded cursor-pointer ${device=='phone' ? "bg-gray-700": " "}`}/>
                     <TabletIcon onClick={()=> setDevice('tablet')} className={`size-6 p-1 rounded cursor-pointer ${device=='tablet' ? "bg-gray-700": " "}`}/>
-                    <LaptopIcon onClick={()=> setDevice('dekstop')} className={`size-6 p-1 rounded cursor-pointer ${device=='dekstop' ? "bg-gray-700": " "}`}/>
+                    <LaptopIcon onClick={()=> setDevice('desktop')} className={`size-6 p-1 rounded cursor-pointer ${device=='desktop' ? "bg-gray-700": " "}`}/>
                 </div>
                 {/*right*/}
                 <div className="flex items-center justify-end gap-3 flex-1 text-xs sm:text-sm">
@@ -94,9 +98,11 @@ const Projects = () => {
                 </div>   
             </div>
             <div className="flex-1 flex overflow-auto">
-                <div>Sidebar</div>
+                {/*Sidebar  /* yha pe sidebar wala code le aake inject kr rhe hai */}
+                <Sidebar isMenuOpen={isMenuOpen} project = {project} setProject={(p)=>setProject(p)} isGenerating={isGenerating} setIsGenerating={setIsGenerating}/>
                 <div className="flex-1 p-2 pl-0">
-                    project preview
+                    {/*project preview  yha pe preview component wala code le aake inject kr rhe hai */}
+                    <ProjectPreview ref={previewRef} project={project} isGenerating={isGenerating} device={device}/>
                 </div>
 
             </div>

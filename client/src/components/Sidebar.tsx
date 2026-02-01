@@ -1,6 +1,6 @@
-import React from "react"
+import React , {useEffect, useRef, useState} from "react"
 import type { Message, Project, Version } from "../types";
-import { BotIcon, EyeIcon, UserIcon } from "lucide-react";
+import { BotIcon, EyeIcon, Loader2Icon, SendIcon, UserIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface SidebarProps {
@@ -12,6 +12,26 @@ interface SidebarProps {
 }
 
 const Sidebar = ({isMenuOpen,project,setProject, isGenerating, setIsGenerating} : SidebarProps) => {
+
+        const messageRef = useRef<HTMLDivElement>(null)
+        const [input, setInput] = useState('')
+        const handleRollback = async (versionId : string) => {
+
+        }
+
+        const handleRevisions = async (e : React.FormEvent) => {
+            e.preventDefault()
+            setIsGenerating(true)
+            setTimeout(()=>{
+                setIsGenerating(false)
+            },3000)
+        }
+
+        useEffect(()=>{
+            if(messageRef.current){
+                messageRef.current.scrollIntoView({behavior : 'smooth'})
+            }
+        },[project.conversation.length, isGenerating])
     return (
         <div className={`h-full sm:max-w-sm rounded-xl bg-gray-900 border-gray-800 
         transition-all ${isMenuOpen? 'max-sm:w-0 overflow-hidden' : 'w-full'}`}>
@@ -19,7 +39,7 @@ const Sidebar = ({isMenuOpen,project,setProject, isGenerating, setIsGenerating} 
                {/* Messages container */}
                <div className="flex-1 overflow-y-auto no-scrollbar px-3 flex flex-col gap-4">
                     {[...project.conversation, ...project.versions]
-                    .sort((a,b)=> new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()).map((message)=>{
+                    .sort((a,b)=> new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()).map((message)=>{ //“Take all chat messages and code versions, sort them by time, and render them as a chat-style timeline where user messages appear on the right and AI messages on the left.”
                         const isMessage = 'content' in message;
                         if(isMessage){
                             const msg = message as Message;
@@ -56,7 +76,7 @@ const Sidebar = ({isMenuOpen,project,setProject, isGenerating, setIsGenerating} 
                                         {project.current_version_index === ver.id ? (
                                             <button className="px-3 py-1 rounded-md text-xs bg-gray-700"> Current version</button>
                                         ): (
-                                            <button className="px-3 py-1 rounded-md text-xs bg-indigo-500 hover:bg-indigo-600 text-white">
+                                            <button onClick={()=>handleRollback(ver.id)} className="px-3 py-1 rounded-md text-xs bg-indigo-500 hover:bg-indigo-600 text-white">
                                                 Roll back to this version
                                             </button>
                                         )}
@@ -83,10 +103,25 @@ const Sidebar = ({isMenuOpen,project,setProject, isGenerating, setIsGenerating} 
                     )
 
                     }
+                    <div ref={messageRef}/>
                 </div> 
                 {/* Input area */}
-                <form ></form>
+                <form onSubmit={handleRevisions} className="m-3 relative" >
+                    <div className="flex items-center gap-2">
+                        <textarea onChange={(e)=>setInput(e.target.value)}value= {input} rows={4} placeholder="Describe your website or request changes..." className="flex-1 p-3 rounded-xl resize-none text-sm outline-none ring ring-gray-700
+                         focus:ring-indigo-500 bg-gray-800 text-gray-100 placeholder-gray-400 transition-all" disabled= {isGenerating}/>
+                         <button  disabled= {isGenerating || !input.trim()} className="absolute bottom-2.5 right-2.5 rounded-full bg-linear-to-r from-indigo-500 to-indigo-600 
+                         hover:from-indigo-600 hover: to-indigo-700 text-white transition-colors disabled: opacity-60'">{isGenerating?
+                         <Loader2Icon className="size-7 p-1.5 animate-spin text-white"/>:
+                         <SendIcon className="size-7 p-1.5 text-white"/>}
+                         </button>
+
+                    </div>
+
+                </form>
             </div>
         </div>
     )
+
 }
+export default Sidebar
