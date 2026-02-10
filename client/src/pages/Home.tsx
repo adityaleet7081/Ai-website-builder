@@ -91,13 +91,13 @@ const Home = () => {
     <div className="flex flex-wrap items-center justify-center gap-16 md:gap-20 mb-10">
     <img
         className="max-w-28 md:max-w-32 invert opacity-80"
-        src="/logos/framer.svg"
-        alt="Framer"
+        src="/logos/facebook.svg"
+        alt="Facebook"
     />
     <img
         className="max-w-28 md:max-w-32 invert opacity-80"
-        src="/logos/huawei.svg"
-        alt="Huawei"
+        src="/logos/linkedin.svg"
+        alt="linkedin"
     />
     <img
         className="max-w-28 md:max-w-32 invert opacity-80"
