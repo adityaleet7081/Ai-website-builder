@@ -15,7 +15,11 @@ const port = process.env.PORT ||3000;
 
 // ✅ FIXED: Added localhost:5173 (Vite default) and proper CORS setup
 const corsOptions = {
-    origin: process.env.TRUSTED_ORIGINS?.split(',') || ['http://localhost:5173', 'http://localhost:3000'],
+    origin: [
+        'http://localhost:5173', 
+        'http://localhost:3000',
+        'https://ai-website-builder-ui.onrender.com' // ← Add this line
+    ],
     credentials: true,
 }
 
