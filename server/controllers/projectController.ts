@@ -51,9 +51,12 @@ export const makeRevision = async (req: Request, res: Response) => {
             where: {id: userId},
             data: {credits:{decrement :5}}
         })
+        
+        console.log('[45vpj] Prompt enhanced');
+        
         // Enhance user prompt
         const promptEnhancedResponse = await openai.chat.completions.create({
-            model:"z-ai/glm-4.5-air:free",
+            model:"z-ai/glm-4.5-air:free", // Your original working model
             messages: [
                 {
                     role: 'system',
@@ -72,9 +75,13 @@ export const makeRevision = async (req: Request, res: Response) => {
                     role: 'user',
                     content: `User's request: "${message}"`
                 }
-            ]
+            ],
+            max_tokens: 150 // ✅ Added token limit
         })
         const enhancedPrompt= promptEnhancedResponse.choices[0].message.content;
+        
+        console.log('[45vpj] Enhanced prompt:', enhancedPrompt);
+        
         await prisma.conversation.create({
             data: {
                 role: 'assistant',
@@ -89,9 +96,12 @@ export const makeRevision = async (req: Request, res: Response) => {
                 projectId: projectId as string
             }
         })
+        
+        console.log('[45vpj] Response sent, starting code generation...');
+        
         // Generate Website Code According to the new Prompt
         const  codeGenerationResponse = await openai.chat.completions.create({
-            model:'z-ai/glm-4.5-air:free',
+            model:'z-ai/glm-4.5-air:free', // Your original working model
             messages: [
                 {
                    role: 'system',
@@ -114,11 +124,15 @@ export const makeRevision = async (req: Request, res: Response) => {
                    role: 'user',
                    content: `Here is the current website code: "${currentProject.current_code}" The user wants this change:"${enhancedPrompt}"` 
                 }
-            ]
+            ],
+            max_tokens: 4000 // ✅ Added token limit for code generation
         })
         const code = codeGenerationResponse.choices[0].message.content || '';
 
-        if(!code){
+        console.log('[45vpj] Code generated, length:', code.length);
+
+        if(!code || code.length === 0){
+            console.error('[45vpj] ERROR: Empty code response from OpenRouter');
             await prisma.conversation.create({
                 data: {
                     role: 'assistant',
@@ -130,7 +144,7 @@ export const makeRevision = async (req: Request, res: Response) => {
                 where: {id: userId},
                 data: {credits:{increment :5}}
             })
-            return res.status(500).json({message: 'Failed to generate code'}); // ✅ FIXED: Added proper response
+            return res.status(500).json({message: 'Failed to generate code'}); 
         }
 
         const version = await prisma.version.create({
@@ -163,7 +177,8 @@ export const makeRevision = async (req: Request, res: Response) => {
                 data: {credits:{increment :5}}
             })
         
-        console.log(error.code || error.message);
+        console.log('[45vpj] ERROR:', error.code || error.message);
+        console.error('[45vpj] Full error:', error);
         res.status(500).json({message: error.message})
         
     }
@@ -237,22 +252,42 @@ export const getProjectPreview = async (req: Request , res: Response) => {
     try {
         const userId = req.userId;
         const { projectId } = req.params;
+        
+        console.log('[PREVIEW] Fetching project:', projectId, 'for user:', userId);
+        
         if(!userId){
+            console.log('[PREVIEW] ERROR: No userId found');
             return res.status(401).json({message: 'Unauthorized'})
         }
+        
+        // ✅ First check if project exists at all
+        const projectExists = await prisma.websiteProject.findUnique({
+            where: {id: projectId as string}
+        })
+        
+        if(!projectExists){
+            console.log('[PREVIEW] ERROR: Project does not exist in database:', projectId);
+            return res.status(404).json({message: 'Project not found in database'});
+        }
+        
+        console.log('[PREVIEW] Project exists, owner:', projectExists.userId);
+        
+        // ✅ Then check if user owns it
         const project = await prisma.websiteProject.findFirst({
             where: {id: projectId as string, userId},
             include: {versions: true}
         })
 
         if(!project){
-            return res.status(404).json({message: 'Project not found'});
+            console.log('[PREVIEW] ERROR: User does not own this project. Project owner:', projectExists.userId, 'Requesting user:', userId);
+            return res.status(403).json({message: 'You do not have permission to view this project'});
         }
         
-        // ✅ FIXED: Removed the delete statement - this was deleting projects on preview!
+        console.log('[PREVIEW] Success! Returning project with code length:', project.current_code?.length || 0);
+        
         res.json({project})
     } catch (error: any) {
-        console.log(error.code || error.message);
+        console.log('[PREVIEW] ERROR:', error.code || error.message);
         res.status(500).json({message: error.message})
         
     }
@@ -308,7 +343,7 @@ export const saveProjectCode = async (req: Request , res: Response) => {
         }
 
         if(!code){
-            return res.status(400).json({message: 'Code is required'}) // ✅ FIXED: typo "Code id required" -> "Code is required"
+            return res.status(400).json({message: 'Code is required'})
         }
          
         const project = await prisma.websiteProject.findUnique({
