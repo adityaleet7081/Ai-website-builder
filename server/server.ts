@@ -13,13 +13,18 @@ const app = express();
 
 const port = process.env.PORT ||3000;
 
-// ✅ FIXED: Added localhost:5173 (Vite default) and proper CORS setup
+const defaultOrigins = [
+    'http://localhost:5173', 
+    'http://localhost:3000',
+    'https://ai-website-builder-ui.onrender.com',
+    'https://ai-website-builder-frontend-78nf.onrender.com' // Fixed the CORS issue
+];
+
+const envOrigins = process.env.TRUSTED_ORIGINS ? process.env.TRUSTED_ORIGINS.split(',') : [];
+const allowedOrigins = [...new Set([...defaultOrigins, ...envOrigins])];
+
 const corsOptions = {
-    origin: [
-        'http://localhost:5173', 
-        'http://localhost:3000',
-        'https://ai-website-builder-ui.onrender.com' // ← Add this line
-    ],
+    origin: allowedOrigins,
     credentials: true,
 }
 

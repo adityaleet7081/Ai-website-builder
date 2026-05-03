@@ -3,7 +3,14 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import prisma from "./prisma.js";
 
-const trustedOrigins= process.env.TRUSTED_ORIGINS?.split(',')|| []
+const envOrigins = process.env.TRUSTED_ORIGINS?.split(',') || [];
+const defaultOrigins = [
+    'http://localhost:5173', 
+    'http://localhost:3000',
+    'https://ai-website-builder-ui.onrender.com',
+    'https://ai-website-builder-frontend-78nf.onrender.com'
+];
+const trustedOrigins = [...new Set([...defaultOrigins, ...envOrigins])];
 
 export const auth = betterAuth({
     database: prismaAdapter(prisma, {
