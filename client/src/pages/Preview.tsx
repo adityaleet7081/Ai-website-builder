@@ -9,73 +9,73 @@ import { authClient } from "@/lib/auth-client";
 
 const Preview = () => {
 
-    const {data : session , isPending} = authClient.useSession()
-    const { projectId, versionId} = useParams()
+    const { data: session, isPending } = authClient.useSession()
+    const { projectId, versionId } = useParams()
     const navigate = useNavigate();
-    const [code , setCode] = useState('');
+    const [code, setCode] = useState('');
     const [loading, setLoading] = useState(true);
 
     const fetchCode = async () => {
         try {
-         const {data} = await api.get(`/api/project/preview/${projectId}`) 
-         
-         // ✅ Check if project exists
-         if(!data.project){
-            toast.error('Project not found');
-            navigate('/my-projects');
-            return;
-         }
-         
-         let projectCode = data.project.current_code;
-         
-         // ✅ If versionId is provided, use that version's code
-         if(versionId){
-            const version = data.project.versions.find((v: Version) => v.id === versionId);
-            if(version){
-                projectCode = version.code;
+            const { data } = await api.get(`/api/project/preview/${projectId}`)
+
+            if (!data.project) {
+                toast.error('Project not found');
+                navigate('/my-projects');
+                return;
             }
-         }
-         
-         // ✅ Check if code exists
-         if(!projectCode || projectCode.trim() === ''){
-            toast.error('No code found for this project. Please generate the website first.');
-            navigate(`/editor/${projectId}`);
-            return;
-         }
-         
-         setCode(projectCode);
-         setLoading(false);
-        } catch (error:any) {
-            toast.error(error?.response?.data?.message || error.message);
-            console.log(error);
+
+            let projectCode = data.project.current_code;
+
+            if (versionId) {
+                const version = data.project.versions.find((v: Version) => v.id === versionId);
+                if (version) {
+                    projectCode = version.code;
+                }
+            }
+
+            if (!projectCode || projectCode.trim() === '') {
+                toast.error('No code found for this project. Please generate the website first.');
+                navigate(`/editor/${projectId}`);
+                return;
+            }
+
+            setCode(projectCode);
             setLoading(false);
-            // ✅ Redirect on error
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { message?: string } }, message?: string };
+            toast.error(err?.response?.data?.message || err.message || "An error occurred");
+            setLoading(false);
             setTimeout(() => navigate('/my-projects'), 2000);
         }
     }
 
-    useEffect(()=> {
-        if(!isPending && session?.user){
-            fetchCode()
+    useEffect(() => {
+        if (!isPending && session?.user) {
+            void fetchCode()
         }
-    },[session?.user]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [session?.user, isPending]);
 
-    if(loading){
+    if (loading) {
         return (
-            <div className="flex items-center justify-center h-screen">
-                <Loader2Icon className="size-7 animate-spin text-indigo-200"/>
+            <div className="flex flex-col items-center justify-center h-screen gap-4" style={{ background: 'var(--bg-primary)' }}>
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center"
+                    style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
+                    <Loader2Icon className="size-7 animate-spin" style={{ color: 'var(--accent-violet)' }} />
+                </div>
+                <p className="text-sm animate-pulse" style={{ color: 'var(--text-muted)' }}>Loading preview...</p>
             </div>
         )
     }
-    
-    // ✅ Show message if no code
-    if(!code){
+
+    if (!code) {
         return (
-            <div className="flex flex-col items-center justify-center h-screen gap-4">
-                <p className="text-gray-400">No preview available for this project.</p>
-                <button 
+            <div className="flex flex-col items-center justify-center h-screen gap-4" style={{ background: 'var(--bg-primary)' }}>
+                <p style={{ color: 'var(--text-secondary)' }}>No preview available for this project.</p>
+                <button
                     onClick={() => navigate(`/editor/${projectId}`)}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                    className="btn-glow px-5 py-2 rounded-xl text-sm font-medium"
                 >
                     Go to Editor
                 </button>
@@ -84,9 +84,9 @@ const Preview = () => {
     }
 
     return (
-        <div className="h-screen">
-            <ProjectPreview project={{current_code : code} as Project}
-            isGenerating={false} showEditorPanel={false}/>
+        <div className="h-screen" style={{ background: 'var(--bg-primary)' }}>
+            <ProjectPreview project={{ current_code: code } as Project}
+                isGenerating={false} showEditorPanel={false} />
         </div>
     )
 }

@@ -228,7 +228,7 @@ export const createUserProject = async (req: Request, res: Response) => {
                 await prisma.user.update({
                     where: {id: userId},
                     data: {credits: {increment: 5}}
-                }).catch(err => console.log('Failed to refund credits:', err))
+                }).catch((err: any) => console.log('Failed to refund credits:', err))
                 
                 await prisma.conversation.create({
                     data: {
@@ -236,7 +236,7 @@ export const createUserProject = async (req: Request, res: Response) => {
                         content: "Sorry, there was an error generating your website. Your credits have been refunded. Please try again.",
                         projectId: project.id
                     }
-                }).catch(err => console.log('Failed to create error message:', err))
+                }).catch((err: any) => console.log('Failed to create error message:', err))
             }
         })();
 
@@ -248,7 +248,7 @@ export const createUserProject = async (req: Request, res: Response) => {
             await prisma.user.update({
                 where: {id:userId},
                 data: {credits: {increment:5}}
-            }).catch(err => console.log('Failed to refund credits:', err))
+            }).catch((err: any) => console.log('Failed to refund credits:', err))
         }
         
         res.status(500).json({message: error.message || 'Failed to create project'})

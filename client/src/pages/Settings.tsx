@@ -1,24 +1,25 @@
-import { AccountSettingsCards,ChangePasswordCard,DeleteAccountCard } from "@daveyplate/better-auth-ui"
+import { AccountSettingsCards, ChangePasswordCard, DeleteAccountCard } from "@daveyplate/better-auth-ui"
 const Settings = () => {
     return (
-        <div className="w-full p-4 flex justofy-center items-center min-h-[90vh] flex-col gap-6 py-12 ">
+        <div className="w-full p-4 flex justify-center items-center min-h-[90vh] flex-col gap-6 py-20 pt-24">
+            <div className="fixed inset-0 dot-grid opacity-20 pointer-events-none -z-10" />
             <AccountSettingsCards
-            classNames={{
-                card: {
-                    base: 'bg-black/10 ring ring-indigo-950 max-w-xl mx-auto',
-                    footer: 'bg-blac/10 ring ring-indigo-950'
-                }
-            }}/>
+                classNames={{
+                    card: {
+                        base: 'max-w-xl mx-auto rounded-2xl',
+                        footer: 'border-white/5'
+                    }
+                }} />
             <div className="w-full">
                 <ChangePasswordCard classNames={{
-                    base: 'bg-black/10 ring ring-indigo-950 max-w-xl mx-auto',
-                    footer: 'bg-blac/10 ring ring-indigo-950'
+                    base: 'max-w-xl mx-auto rounded-2xl',
+                    footer: 'border-white/5'
                 }} />
             </div>
             <div className="w-full">
                 <DeleteAccountCard classNames={{
-                    base: 'bg-black/10 ring ring-indigo-950 max-w-xl mx-auto'
-                }}/>
+                    base: 'max-w-xl mx-auto rounded-2xl'
+                }} />
             </div>
         </div>
     )
