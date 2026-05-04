@@ -98,17 +98,19 @@ export const createUserProject = async (req: Request, res: Response) => {
                     {
                         role: 'system',
                         content: `
-                        You are a prompt enhancement specialist. Take the user's website request and expand it into a detailed, comprehensive prompt that will help create the best possible website.
+                         You are a world-class UI/UX designer and prompt enhancement specialist. Take the user's website request and expand it into a detailed, visual-first prompt that will result in a stunning, modern, premium-quality website.
 
-                            Enhance this prompt by:
-                            1. Adding specific design details (layout, color scheme, typography)
-                            2. Specifying key sections and features
-                            3. Describing the user experience and interactions
-                            4. Including modern web design best practices
-                            5. Mentioning responsive design requirements
-                            6. Adding any missing but important elements
+                         Enhance this prompt by covering ALL of these aspects:
+                         1. VISUAL THEME: Specify a color palette (e.g., deep navy + electric violet accents, or warm cream + rich emerald), dark/light mode preference, overall mood (luxurious, playful, minimal, bold)
+                         2. TYPOGRAPHY: Suggest specific Google Fonts pairings (e.g., "Playfair Display for headings, Inter for body")
+                         3. KEY SECTIONS: List all required page sections (Hero, About, Features/Services, Portfolio/Work, Testimonials, Pricing, FAQ, Contact, Footer)
+                         4. HERO SECTION: Describe a visually impactful hero with gradient backgrounds, large headline, subtext, and CTA buttons
+                         5. ANIMATIONS: Specify CSS animations — fade-ins on scroll, hover effects on cards, smooth transitions, gradient animations
+                         6. LAYOUT: Grid/flex layouts, card-based designs, proper whitespace, visual hierarchy
+                         7. INTERACTIONS: Hover states, button effects, smooth scrolling, interactive elements
+                         8. MODERN PATTERNS: Glassmorphism cards, gradient text, frosted-glass navbars, floating elements
 
-                        Return ONLY the enhanced prompt, nothing else. Make it detailed but concise (2-3 paragraphs max).`
+                         Return ONLY the enhanced prompt, nothing else. Make it rich and specific (3-4 paragraphs).`
                     },
                     {
                         role: 'user',
@@ -144,30 +146,33 @@ export const createUserProject = async (req: Request, res: Response) => {
                         {
                             role: 'system',
                             content: `
-                                        You are an expert web developer. Create a complete, production-ready, single-page website based on this request: "${enhancedPrompt}"
+                             You are a world-class senior frontend engineer and UI/UX designer. Create a STUNNING, production-ready, single-page website. The output must look like it was built by a top-tier design agency.
 
-                            CRITICAL REQUIREMENTS:
-                            - You MUST output valid HTML ONLY. 
-                            - Use Tailwind CSS for ALL styling
-                            - Include this EXACT script in the <head>: <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-                            - Use Tailwind utility classes extensively for styling, animations, and responsiveness
-                            - Make it fully functional and interactive with JavaScript in <script> tag before closing </body>
-                            - Use modern, beautiful design with great UX using Tailwind classes
-                            - Make it responsive using Tailwind responsive classes (sm:, md:, lg:, xl:)
-                            - Use Tailwind animations and transitions (animate-*, transition-*)
-                            - Include all necessary meta tags
-                            - Use Google Fonts CDN if needed for custom fonts
-                            - Use placeholder images from https://placehold.co/600x400
-                            - Use Tailwind gradient classes for beautiful backgrounds
-                            - Make sure all buttons, cards, and components use Tailwind styling
+                             TECH STACK:
+                             - Pure HTML5 with Tailwind CSS via CDN
+                             - Include this EXACT script in <head>: <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+                             - Include Google Fonts via CDN for premium typography
+                             - Vanilla JavaScript for interactivity
 
-                            CRITICAL HARD RULES:
-                            1. You MUST put ALL output ONLY into message.content.
-                            2. You MUST NOT place anything in "reasoning", "analysis", "reasoning_details", or any hidden fields.
-                            3. You MUST NOT include internal thoughts, explanations, analysis, comments, or markdown.
-                            4. Do NOT include markdown, explanations, notes, or code fences.
+                             MANDATORY DESIGN QUALITY STANDARDS:
+                             1. HERO SECTION: Must have a full-viewport hero with a bold gradient or dark background, large impactful headline (text-5xl+), subheading, and at least 2 CTA buttons with hover effects
+                             2. COLOR PALETTE: Use a rich, curated palette — avoid plain/flat colors. Use gradients (e.g., from-violet-600 to-indigo-600, from-slate-900 to-slate-800). Use accent colors for highlights.
+                             3. TYPOGRAPHY: Use Google Fonts. Combine a display/serif font for headings with a clean sans-serif for body. Apply text-gradient effects on key headings using bg-clip-text.
+                             4. GLASSMORPHISM: Use frosted-glass cards (bg-white/10 backdrop-blur-md border border-white/20) for feature cards, testimonials, pricing boxes.
+                             5. ANIMATIONS: Add CSS keyframe animations and Tailwind transitions — fade-in on load, hover:scale-105 on cards, hover:shadow-xl on buttons, smooth color transitions.
+                             6. SECTIONS: Include all relevant sections: Navbar (sticky, glassmorphic), Hero, Features/Services (3-4 cards in a grid), How It Works or Portfolio, Testimonials, CTA Banner, Footer.
+                             7. RESPONSIVE: Fully responsive using Tailwind breakpoints (sm:, md:, lg:, xl:). Mobile hamburger menu if needed.
+                             8. MICRO-INTERACTIONS: Hover effects on nav links, animated underlines, button press effects, card lift on hover.
+                             9. IMAGES: Use https://picsum.photos/800/600?random=1 (change the number for variety) for realistic placeholder images.
+                             10. FOOTER: Rich footer with links, social icons (use emoji or SVG), copyright.
 
-                            The HTML should be complete and ready to render as-is with Tailwind CSS.`
+                             STYLE INSPIRATION: Think Stripe, Linear, Vercel, Notion — clean, modern, premium, confidence-inspiring.
+
+                             ABSOLUTE RULES:
+                             1. Output ONLY raw HTML. No markdown, no code fences, no explanations, no comments outside the HTML.
+                             2. Do NOT include \`\`\`html or \`\`\` anywhere.
+                             3. Start directly with <!DOCTYPE html> and end with </html>.
+                             4. The website must be VISUALLY IMPRESSIVE — a basic or ugly result is a FAILURE.`
                         },
                         {
                             role: 'user',

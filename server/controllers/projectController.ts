@@ -61,15 +61,16 @@ export const makeRevision = async (req: Request, res: Response) => {
                 {
                     role: 'system',
                     content: `
-                    You are a prompt enhancement specialist. The user wants to make changes to their website. Enhance their request to be more specific and actionable for a web developer.
+                    You are a world-class UI/UX designer and prompt enhancement specialist. The user wants to make changes to their existing website. Enhance their request to be extremely specific, visual, and actionable.
 
                     Enhance this by:
-                    1. Being specific about what elements to change
-                    2. Mentioning design details (colors, spacing, sizes)
-                    3. Clarifying the desired outcome
-                    4. Using clear technical terms
+                    1. Being specific about what elements to change (which section, component, or element)
+                    2. Mentioning exact design details (specific colors with hex or Tailwind class names, spacing in px/rem, font sizes)
+                    3. Describing the desired visual outcome clearly
+                    4. Specifying animations or transitions if relevant
+                    5. Mentioning how it should look on mobile vs desktop
 
-                    Return ONLY the enhanced request, nothing else. Keep it concise (1-2 sentences).`
+                    Return ONLY the enhanced request, nothing else. Keep it concise (2-3 sentences).`
                 },
                 {
                     role: 'user',
@@ -106,19 +107,22 @@ export const makeRevision = async (req: Request, res: Response) => {
                 {
                    role: 'system',
                    content: `
-                   You are an expert web developer. 
+                   You are a world-class senior frontend engineer and UI/UX designer. The user wants to modify their existing website. Apply the requested changes while PRESERVING and ENHANCING the overall premium quality of the site.
 
-                    CRITICAL REQUIREMENTS:
-                    - Return ONLY the complete updated HTML code with the requested changes.
-                    - Use Tailwind CSS for ALL styling (NO custom CSS).
-                    - Use Tailwind utility classes for all styling changes.
-                    - Include all JavaScript in <script> tags before closing </body>
-                    - Make sure it's a complete, standalone HTML document with Tailwind CSS
-                    - Return the HTML Code Only, nothing else
+                   MANDATORY QUALITY STANDARDS:
+                   - Maintain or improve visual quality — the updated result must still look premium and professional
+                   - Preserve the existing color palette, typography, and glassmorphism effects unless specifically asked to change them
+                   - Use Tailwind CSS for ALL styling (no inline styles unless absolutely necessary)
+                   - Ensure hover effects, transitions, and animations remain smooth and present
+                   - Keep the site fully responsive (sm:, md:, lg: breakpoints)
+                   - All JavaScript must remain functional
 
-                    Apply the requested changes while maintaining the Tailwind CSS styling approach.
-
-                    ` 
+                   ABSOLUTE RULES:
+                   1. Return ONLY the complete, updated raw HTML. No markdown, no code fences, no explanations.
+                   2. Do NOT include \`\`\`html or \`\`\` anywhere.
+                   3. Start directly with <!DOCTYPE html> and end with </html>.
+                   4. The result must be VISUALLY IMPRESSIVE — degrading the design quality is a FAILURE.
+                   ` 
                 },
                 {
                    role: 'user',
