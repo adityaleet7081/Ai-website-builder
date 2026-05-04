@@ -1,10 +1,56 @@
 import api from "@/configs/axios";
 import { authClient } from "@/lib/auth-client";
 import { Loader2Icon, SparklesIcon, Zap, Layers, Code2, Wand2, ArrowRight, ChevronDown } from "lucide-react";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Footer from "../components/Footer";
+
+const Hero3DScene = lazy(() => import("../components/Hero3DScene"));
+
+// ===== Scroll Reveal Hook =====
+function useScrollReveal() {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { el.classList.add("revealed"); observer.unobserve(el); } },
+      { threshold: 0.15, rootMargin: "0px 0px -40px 0px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  return ref;
+}
+
+
+// ===== Floating Particles =====
+const Particles = () => (
+  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    {Array.from({ length: 20 }).map((_, i) => (
+      <div key={i} className="particle" style={{
+        left: `${Math.random() * 100}%`,
+        bottom: '-10px',
+        opacity: 0,
+        animationDuration: `${8 + Math.random() * 12}s`,
+        animationDelay: `${Math.random() * 10}s`,
+        background: i % 3 === 0 ? 'var(--accent-cyan)' : i % 3 === 1 ? 'var(--accent-pink)' : 'var(--accent-violet)',
+        width: `${2 + Math.random() * 3}px`, height: `${2 + Math.random() * 3}px`,
+      }} />
+    ))}
+  </div>
+);
+
+// ===== ScrollReveal wrapper =====
+const Reveal = ({ children, className = "", delay = 0, direction = "up" }: {
+  children: React.ReactNode; className?: string; delay?: number; direction?: "up" | "left" | "right" | "scale";
+}) => {
+  const ref = useScrollReveal();
+  const dirClass = direction === "left" ? "scroll-reveal-left" : direction === "right" ? "scroll-reveal-right" : direction === "scale" ? "scroll-reveal-scale" : "scroll-reveal";
+  const delayClass = delay > 0 ? `scroll-delay-${delay}` : "";
+  return <div ref={ref} className={`${dirClass} ${delayClass} ${className}`}>{children}</div>;
+};
 
 const Home = () => {
   const [input, setInput] = useState("");
@@ -14,6 +60,7 @@ const Home = () => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [typedText, setTypedText] = useState("");
   const heroRef = useRef<HTMLDivElement>(null);
+  const [scrollY, setScrollY] = useState(0);
 
   const phrases = [
     "a SaaS landing page with pricing...",
@@ -57,6 +104,12 @@ const Home = () => {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
+  const handleScroll = useCallback(() => { setScrollY(window.scrollY); }, []);
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
   const onSubmitHandler = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -91,66 +144,25 @@ const Home = () => {
       {/* ===== HERO ===== */}
       <section ref={heroRef} className="relative min-h-screen flex flex-col items-center justify-center px-4 overflow-hidden">
         
-        {/* Premium 3D Stacked Glass Effect */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none hero-3d-container">
-          <div 
-            style={{ 
-              transform: `rotateX(${15 + mousePos.y * -8}deg) rotateY(${mousePos.x * 12}deg) rotateZ(-2deg) translateZ(-150px)`,
-              width: '900px', height: '600px',
-              animation: 'hero-float-up-down 8s ease-in-out infinite'
-            }} 
-            className="hero-3d-card">
-            
-            <div className="hero-3d-card-inner p-8">
-              <div className="w-40 h-5 rounded-full bg-white/5 mb-4" />
-              <div className="w-64 h-4 rounded-full bg-white/5 mb-12" />
-              <div className="flex gap-4">
-                <div className="w-full h-32 rounded-xl bg-violet-500/10 border border-violet-500/20" />
-                <div className="w-full h-32 rounded-xl bg-cyan-500/10 border border-cyan-500/20" />
-                <div className="w-full h-32 rounded-xl bg-pink-500/10 border border-pink-500/20" />
-              </div>
-            </div>
+        {/* Advanced 3D WebGL Scene */}
+        <Suspense fallback={null}>
+          <Hero3DScene mousePos={mousePos} />
+        </Suspense>
 
-            {/* Middle Layer */}
-            <div 
-              style={{ 
-                transform: 'translateZ(100px) translateX(60px) translateY(60px)',
-                width: '600px', height: '400px'
-              }} 
-              className="hero-3d-card">
-              <div className="hero-3d-card-inner p-6">
-                <div className="w-32 h-5 rounded-full bg-white/10 mb-8" />
-                <div className="w-full h-40 rounded-xl bg-gradient-to-br from-violet-500/10 to-transparent border border-white/5" />
-              </div>
-            </div>
+        {/* Floating Particles */}
+        <Particles />
 
-            {/* Top Layer */}
-            <div 
-              style={{ 
-                transform: 'translateZ(200px) translateX(-50px) translateY(-30px)',
-                width: '450px', height: '280px'
-              }} 
-              className="hero-3d-card shadow-2xl">
-              <div className="hero-3d-card-inner flex items-center justify-center">
-                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(124,58,237,0.1)_0%,transparent_70%)]" />
-                 <div className="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center"
-                      style={{ boxShadow: '0 0 30px rgba(124,58,237,0.2)' }}>
-                    <SparklesIcon className="size-8 text-violet-400 opacity-50" />
-                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Animated background blobs with mouse parallax */}
+        {/* Animated background blobs with mouse parallax + scroll parallax */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute w-[800px] h-[800px] -top-40 -right-40 blob-violet opacity-20 blur-[150px] anim-float1"
-            style={{ transform: `translate(${mousePos.x * 20}px, ${mousePos.y * 20}px)` }} />
+            style={{ transform: `translate(${mousePos.x * 20}px, ${mousePos.y * 20 - scrollY * 0.15}px)` }} />
           <div className="absolute w-[600px] h-[600px] -bottom-20 -left-40 blob-cyan opacity-15 blur-[120px] anim-float2"
-            style={{ transform: `translate(${mousePos.x * -15}px, ${mousePos.y * -15}px)` }} />
+            style={{ transform: `translate(${mousePos.x * -15}px, ${mousePos.y * -15 + scrollY * 0.1}px)` }} />
+          <div className="absolute w-[400px] h-[400px] top-1/3 left-1/2 -translate-x-1/2 blob-pink opacity-10 blur-[100px] anim-morph"
+            style={{ transform: `translate(${mousePos.x * 10}px, ${-scrollY * 0.08}px)` }} />
         </div>
 
-        {/* Radial vignette to fade edges into background */}
+        {/* Radial vignette */}
         <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 70% 60% at 50% 50%, transparent 0%, var(--bg-primary) 100%)' }} />
 
         {/* Hero Content */}
@@ -176,7 +188,6 @@ const Home = () => {
               <br />
               <span className="text-gradient relative">
                 with AI magic
-                {/* Glow shadow behind text */}
                 <span className="absolute inset-0 text-gradient blur-2xl opacity-50 -z-10" aria-hidden="true">with AI magic</span>
               </span>
             </h1>
@@ -222,7 +233,7 @@ const Home = () => {
             </form>
           </div>
 
-          {/* Stats with 3D perspective */}
+          {/* Stats */}
           <div className="anim-fadeUp delay-5 opacity-0 flex items-center gap-8 mt-12 text-sm" style={{ color: 'var(--text-muted)' }}>
             {[
               { val: "2k+", label: "Websites Built" },
@@ -246,18 +257,15 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ===== FEATURES - 3D Floating Cards ===== */}
+      {/* ===== FEATURES - Scroll Reveal Cards ===== */}
       <section className="relative py-32 px-4 overflow-hidden">
-        {/* Subtle 3D background effect to blend sections perfectly */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40">
-          <div className="grid-3d" style={{ top: '0', height: '200%', transform: 'perspective(1000px) rotateX(75deg) translateZ(-100px)', animation: 'hero-float-up-down 12s ease-in-out infinite' }} />
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-violet-600/5 blur-[120px] rounded-full" />
         </div>
-        
         <div className="absolute inset-0 dot-grid opacity-10" />
 
         <div className="relative z-10 max-w-6xl mx-auto">
-          <div className="text-center mb-20">
+          <Reveal className="text-center mb-20">
             <p className="text-sm font-semibold tracking-widest uppercase mb-3" style={{ color: 'var(--accent-violet)' }}>Features</p>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
               Everything you need to <span className="text-gradient">ship fast</span>
@@ -265,19 +273,18 @@ const Home = () => {
             <p className="mt-4 max-w-lg mx-auto" style={{ color: 'var(--text-secondary)' }}>
               From idea to live website in minutes. AI does the heavy lifting.
             </p>
-          </div>
+          </Reveal>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 scene-3d">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((f, i) => (
-              <div key={i} className={`anim-fadeUp opacity-0 delay-${i + 1}`}>
+              <Reveal key={i} delay={i + 1} className="h-full">
                 <div
-                  className="float-card-3d card card-shimmer p-7 group h-full"
+                  className="card card-shimmer p-7 group h-full"
                   style={{
-                    animation: `card-float-${(i % 3) + 1} ${6 + i}s ease-in-out infinite`,
                     background: 'rgba(15, 15, 35, 0.4)',
                     backdropFilter: 'blur(12px)',
+                    transition: 'all 0.4s cubic-bezier(0.22, 1, 0.36, 1)',
                   }}>
-                  {/* Glowing icon */}
                   <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6 relative"
                     style={{ background: `${f.color}15`, border: `1px solid ${f.color}30` }}>
                     <f.icon className="size-6" style={{ color: f.color }} />
@@ -287,65 +294,60 @@ const Home = () => {
                   <h3 className="text-lg font-semibold mb-2">{f.title}</h3>
                   <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{f.desc}</p>
                 </div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ===== HOW IT WORKS - 3D Timeline ===== */}
+      {/* ===== HOW IT WORKS - Scroll Reveal Timeline ===== */}
       <section className="relative py-32 px-4 overflow-hidden">
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: 'var(--border-dim)' }} />
-        {/* 3D grid in background */}
-        <div className="grid-3d" style={{ opacity: 0.4, top: '30%', height: '80%' }} />
+        <Particles />
 
         <div className="relative z-10 max-w-5xl mx-auto">
-          <div className="text-center mb-20">
+          <Reveal className="text-center mb-20">
             <p className="text-sm font-semibold tracking-widest uppercase mb-3" style={{ color: 'var(--accent-cyan)' }}>How It Works</p>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
               Three steps to <span className="text-gradient-warm">launch</span>
             </h2>
-          </div>
+          </Reveal>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {steps.map((s, i) => (
-              <div key={i}
-                className={`card p-8 relative overflow-hidden group anim-fadeUp opacity-0 delay-${i + 1}`}
-                style={{ transformStyle: 'preserve-3d' }}>
-                {/* Large background number */}
-                <span className="absolute -top-4 -right-2 text-[120px] font-bold leading-none select-none transition-colors duration-500"
-                  style={{ color: 'rgba(124,58,237,0.03)', WebkitTextStroke: '1px rgba(124,58,237,0.05)' }}>{s.num}</span>
-                {/* Hover glow */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-2xl"
-                  style={{ background: 'radial-gradient(circle at 50% 0%, rgba(124,58,237,0.08) 0%, transparent 60%)' }} />
-                <div className="relative z-10">
-                  {/* Step number badge */}
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center text-sm font-bold mb-6 relative"
-                    style={{ background: 'linear-gradient(135deg, var(--accent-violet), #9333ea)', color: 'white' }}>
-                    {s.num}
-                    {/* Ripple ring */}
-                    <div className="absolute inset-0 rounded-xl" style={{ animation: 'glow-pulse-ring 3s ease-in-out infinite', animationDelay: `${i * 1}s` }} />
+              <Reveal key={i} delay={i + 1} direction={i === 0 ? "left" : i === 2 ? "right" : "up"}>
+                <div className="card p-8 relative overflow-hidden group h-full"
+                  style={{ transformStyle: 'preserve-3d' }}>
+                  <span className="absolute -top-4 -right-2 text-[120px] font-bold leading-none select-none transition-colors duration-500"
+                    style={{ color: 'rgba(124,58,237,0.03)', WebkitTextStroke: '1px rgba(124,58,237,0.05)' }}>{s.num}</span>
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-2xl"
+                    style={{ background: 'radial-gradient(circle at 50% 0%, rgba(124,58,237,0.08) 0%, transparent 60%)' }} />
+                  <div className="relative z-10">
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center text-sm font-bold mb-6 relative"
+                      style={{ background: 'linear-gradient(135deg, var(--accent-violet), #9333ea)', color: 'white' }}>
+                      {s.num}
+                      <div className="absolute inset-0 rounded-xl" style={{ animation: 'glow-pulse-ring 3s ease-in-out infinite', animationDelay: `${i * 1}s` }} />
+                    </div>
+                    <h3 className="text-xl font-bold mb-3">{s.title}</h3>
+                    <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{s.text}</p>
                   </div>
-                  <h3 className="text-xl font-bold mb-3">{s.title}</h3>
-                  <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{s.text}</p>
+                  {i < 2 && (
+                    <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-px" style={{ background: 'linear-gradient(90deg, var(--accent-violet), transparent)' }} />
+                  )}
                 </div>
-                {/* Connecting line */}
-                {i < 2 && (
-                  <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-px" style={{ background: 'linear-gradient(90deg, var(--accent-violet), transparent)' }} />
-                )}
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ===== CTA - Premium Clean Version ===== */}
+      {/* ===== CTA ===== */}
       <section className="relative py-32 px-4">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute w-[500px] h-[500px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 blob-violet opacity-10 blur-[120px]" />
         </div>
-        <div className="relative z-10 max-w-3xl mx-auto text-center scene-3d">
-          <div className="card p-16 md:p-20 relative overflow-hidden float-card-3d"
+        <Reveal direction="scale" className="relative z-10 max-w-3xl mx-auto text-center">
+          <div className="card p-16 md:p-20 relative overflow-hidden"
             style={{
               background: 'rgba(15, 15, 35, 0.4)',
               backdropFilter: 'blur(16px)',
@@ -354,9 +356,7 @@ const Home = () => {
               transform: `perspective(1200px) rotateX(${mousePos.y * -2}deg) rotateY(${mousePos.x * 2}deg)`,
               transition: 'transform 0.15s ease-out',
             }}>
-            {/* Subtle top border glow instead of full gradient border */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-violet-500 to-transparent opacity-50" />
-            
             <h2 className="text-3xl md:text-5xl font-bold mb-4 relative z-10">
               Start building for <span className="text-gradient">free</span>
             </h2>
@@ -370,7 +370,7 @@ const Home = () => {
               </button>
             </div>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       <Footer />
